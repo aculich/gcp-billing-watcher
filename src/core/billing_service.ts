@@ -3,126 +3,183 @@
  * GCP の課金データを取得するコアロジック
  */
 
-import { GoogleAuth } from 'google-auth-library';
+import { GoogleAuth } from "google-auth-library";
 
 // 課金データの型定義
 export interface BillingCost {
-	currency: string;
-	amount: number;
-	lastUpdated: Date;
+  currency: string;
+  amount: number;
+  lastUpdated: Date;
 }
 
 // BigQuery で取得するコストデータの行
 interface CostRow {
-	total_cost: number;
-	currency: string;
+  total_cost: number;
+  currency: string;
 }
 
 export class BillingService {
-	private auth: GoogleAuth;
-	private projectId: string;
-	private lastCost: BillingCost | null = null;
+  private auth: GoogleAuth;
+  private projectId: string;
+  private lastCost: BillingCost | null = null;
+  private cachedTableName: string | null = null;
 
-	constructor(projectId: string, credentialsPath?: string) {
-		this.projectId = projectId;
+  constructor(projectId: string, credentialsPath?: string) {
+    this.projectId = projectId;
 
-		// 認証情報の設定
-		const authOptions: { scopes: string[]; keyFilename?: string } = {
-			scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-		};
-		if (credentialsPath) {
-			authOptions.keyFilename = credentialsPath;
-		}
-		this.auth = new GoogleAuth(authOptions);
-	}
+    // 認証情報の設定
+    const authOptions: { scopes: string[]; keyFilename?: string } = {
+      scopes: ["https://www.googleapis.com/auth/cloud-platform"],
+    };
+    if (credentialsPath) {
+      authOptions.keyFilename = credentialsPath;
+    }
+    this.auth = new GoogleAuth(authOptions);
+  }
 
-	/**
-	 * 当月の課金データを取得
-	 * Cloud Billing Export to BigQuery を使用して取得
-	 */
-	async fetchCurrentMonthCost(): Promise<BillingCost> {
-		try {
-			// BigQuery API を使用して課金データを取得
-			const client = await this.auth.getClient();
-			const accessToken = await client.getAccessToken();
+  /**
+   * billing_export データセット内の課金テーブル名を自動発見
+   * GCP は gcp_billing_export_v1_XXXXXX のようにサフィックスを付けるため
+   */
+  private async discoverBillingTableName(accessToken: string): Promise<string> {
+    // キャッシュがあれば再利用
+    if (this.cachedTableName) {
+      return this.cachedTableName;
+    }
 
-			// 現在年月を計算（UTC）
-			const now = new Date();
-			const year = now.getUTCFullYear();
-			const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-			const startOfMonth = `${year}-${month}-01`;
+    const response = await fetch(
+      `https://bigquery.googleapis.com/bigquery/v2/projects/${this.projectId}/datasets/billing_export/tables`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-			// BigQuery での課金データクエリ
-			// NOTE: ユーザーが BigQuery に課金エクスポートを設定している前提
-			const query = `
+    if (!response.ok) {
+      throw new Error(
+        `Failed to list tables: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = (await response.json()) as {
+      tables?: Array<{ tableReference: { tableId: string } }>;
+    };
+
+    if (!data.tables || data.tables.length === 0) {
+      throw new Error("No tables found in billing_export dataset");
+    }
+
+    // gcp_billing_export_v1_* パターンにマッチするテーブルを探す
+    const billingTable = data.tables.find((t) =>
+      t.tableReference.tableId.startsWith("gcp_billing_export_v1")
+    );
+
+    if (!billingTable) {
+      throw new Error(
+        "No billing export table found (gcp_billing_export_v1_*)"
+      );
+    }
+
+    this.cachedTableName = billingTable.tableReference.tableId;
+    console.log(`Discovered billing table: ${this.cachedTableName}`);
+    return this.cachedTableName;
+  }
+
+  /**
+   * 当月の課金データを取得
+   * Cloud Billing Export to BigQuery を使用して取得
+   */
+  async fetchCurrentMonthCost(): Promise<BillingCost> {
+    try {
+      // BigQuery API を使用して課金データを取得
+      const client = await this.auth.getClient();
+      const accessToken = await client.getAccessToken();
+
+      // テーブル名を自動発見
+      const tableName = await this.discoverBillingTableName(accessToken.token!);
+
+      // 現在年月を計算（UTC）
+      const now = new Date();
+      const year = now.getUTCFullYear();
+      const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+
+      // BigQuery での課金データクエリ
+      const query = `
 				SELECT 
 					SUM(cost) as total_cost,
 					currency
-				FROM \`${this.projectId}.billing_export.gcp_billing_export_v1\`
+				FROM \`${this.projectId}.billing_export.${tableName}\`
 				WHERE invoice.month = '${year}${month}'
 				GROUP BY currency
 				LIMIT 1
 			`;
 
-			const response = await fetch(
-				`https://bigquery.googleapis.com/bigquery/v2/projects/${this.projectId}/queries`,
-				{
-					method: 'POST',
-					headers: {
-						'Authorization': `Bearer ${accessToken.token}`,
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						query,
-						useLegacySql: false,
-					}),
-				}
-			);
+      const response = await fetch(
+        `https://bigquery.googleapis.com/bigquery/v2/projects/${this.projectId}/queries`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query,
+            useLegacySql: false,
+          }),
+        }
+      );
 
-			if (!response.ok) {
-				throw new Error(`BigQuery API error: ${response.status} ${response.statusText}`);
-			}
+      if (!response.ok) {
+        throw new Error(
+          `BigQuery API error: ${response.status} ${response.statusText}`
+        );
+      }
 
-			const data = await response.json() as { rows?: Array<{ f: Array<{ v: string | null }> }> };
+      const data = (await response.json()) as {
+        rows?: Array<{ f: Array<{ v: string | null }> }>;
+      };
 
-			if (data.rows && data.rows.length > 0) {
-				const row = data.rows[0];
-				if (row && row.f && row.f[0] && row.f[1]) {
-					const cost: BillingCost = {
-						amount: parseFloat(row.f[0].v ?? '0'),
-						currency: row.f[1].v ?? 'USD',
-						lastUpdated: new Date(),
-					};
-					this.lastCost = cost;
-					return cost;
-				}
-			}
+      if (data.rows && data.rows.length > 0) {
+        const row = data.rows[0];
+        if (row && row.f && row.f[0] && row.f[1]) {
+          const cost: BillingCost = {
+            amount: parseFloat(row.f[0].v ?? "0"),
+            currency: row.f[1].v ?? "USD",
+            lastUpdated: new Date(),
+          };
+          this.lastCost = cost;
+          return cost;
+        }
+      }
 
-			// データがない場合はデフォルト値を返す
-			const defaultCost: BillingCost = {
-				amount: 0,
-				currency: 'USD',
-				lastUpdated: new Date(),
-			};
-			this.lastCost = defaultCost;
-			return defaultCost;
-		} catch (error) {
-			console.error('Failed to fetch billing data:', error);
-			throw error;
-		}
-	}
+      // データがない場合はデフォルト値を返す
+      const defaultCost: BillingCost = {
+        amount: 0,
+        currency: "USD",
+        lastUpdated: new Date(),
+      };
+      this.lastCost = defaultCost;
+      return defaultCost;
+    } catch (error) {
+      console.error("Failed to fetch billing data:", error);
+      throw error;
+    }
+  }
 
-	/**
-	 * キャッシュされたコストデータを取得
-	 */
-	getCachedCost(): BillingCost | null {
-		return this.lastCost;
-	}
+  /**
+   * キャッシュされたコストデータを取得
+   */
+  getCachedCost(): BillingCost | null {
+    return this.lastCost;
+  }
 
-	/**
-	 * プロジェクト ID を更新
-	 */
-	setProjectId(projectId: string): void {
-		this.projectId = projectId;
-	}
+  /**
+   * プロジェクト ID を更新
+   */
+  setProjectId(projectId: string): void {
+    this.projectId = projectId;
+  }
 }

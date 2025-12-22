@@ -2,7 +2,7 @@
   "name": "gcp-billing-watcher",
   "displayName": "GCP Billing Watcher",
   "description": "GCP の当月課金状況を VS Code のステータスバーに表示します",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "kkitase",
   "engines": {
     "vscode": "^1.85.0"
@@ -22,11 +22,11 @@
     "commands": [
       {
         "command": "gcpBilling.refresh",
-        "title": "GCP Billing: Refresh Now"
+        "title": "GCP Billing: 今すぐ更新"
       },
       {
         "command": "gcpBilling.showLogs",
-        "title": "GCP Billing: Show Logs"
+        "title": "GCP Billing: ログを表示"
       }
     ],
     "configuration": {
@@ -35,18 +35,15 @@
         "gcpBilling.projectId": {
           "type": "string",
           "default": "",
-          "description": "監視対象の GCP プロジェクト ID"
+          "description": "監視対象の GCP プロジェクト ID",
+          "order": 1
         },
         "gcpBilling.refreshIntervalMinutes": {
           "type": "number",
           "default": 30,
           "minimum": 5,
-          "description": "更新間隔（分）。最小5分。"
-        },
-        "gcpBilling.credentialsPath": {
-          "type": "string",
-          "default": "",
-          "description": "サービスアカウントキー JSON ファイルへのパス（空の場合は Application Default Credentials を使用）"
+          "description": "更新間隔（分）。最小5分。",
+          "order": 2
         }
       }
     }
