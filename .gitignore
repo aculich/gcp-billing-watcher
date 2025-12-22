@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+out/
+
+# Package files
+*.vsix
+
+# Credentials (VERY IMPORTANT!)
+*.json
+!package.json
+!tsconfig.json
+
+# macOS
+.DS_Store
+
+# Agent config
+.agent/
+
+# Environment
+.env

@@ -1,0 +1,68 @@
+{
+  "name": "gcp-billing-watcher",
+  "displayName": "GCP Billing Watcher",
+  "description": "GCP の当月課金状況を VS Code のステータスバーに表示します",
+  "version": "0.1.0",
+  "publisher": "kkitase",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kkitase/gcp-billing-watcher.git"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "gcpBilling.refresh",
+        "title": "GCP Billing: Refresh Now"
+      },
+      {
+        "command": "gcpBilling.showLogs",
+        "title": "GCP Billing: Show Logs"
+      }
+    ],
+    "configuration": {
+      "title": "GCP Billing Watcher",
+      "properties": {
+        "gcpBilling.projectId": {
+          "type": "string",
+          "default": "",
+          "description": "監視対象の GCP プロジェクト ID"
+        },
+        "gcpBilling.refreshIntervalMinutes": {
+          "type": "number",
+          "default": 30,
+          "minimum": 5,
+          "description": "更新間隔（分）。最小5分。"
+        },
+        "gcpBilling.credentialsPath": {
+          "type": "string",
+          "default": "",
+          "description": "サービスアカウントキー JSON ファイルへのパス（空の場合は Application Default Credentials を使用）"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "npm run compile && npx vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.7.1",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "google-auth-library": "^9.0.0"
+  }
+}
