@@ -41,18 +41,20 @@ export class StatusBarManager {
 	 * 課金データを表示
 	 */
 	update(cost: BillingCost): void {
-		const formattedAmount = this.formatCurrency(cost.amount, cost.currency);
+		const monthlyFormatted = this.formatCurrency(cost.amount, cost.currency);
+		const yearlyFormatted = this.formatCurrency(cost.yearlyAmount, cost.currency);
 		
-		// 金額に応じてアイコンを変更
+		// 年間課金額に応じてアイコンを変更
 		let icon = '$(check)';
-		if (cost.amount > 100) {
+		if (cost.yearlyAmount > 100) {
 			icon = '$(warning)';
 		}
-		if (cost.amount > 500) {
+		if (cost.yearlyAmount > 500) {
 			icon = '$(error)';
 		}
 
-		this.item.text = `${icon} GCP: ${formattedAmount}`;
+		// ステータスバー: 当月 / 年間
+		this.item.text = `${icon} GCP: ${monthlyFormatted} / ${yearlyFormatted}`;
 		this.item.tooltip = this.buildTooltip(cost);
 		this.item.backgroundColor = undefined;
 	}
@@ -87,12 +89,18 @@ export class StatusBarManager {
 	 * ツールチップを構築
 	 */
 	private buildTooltip(cost: BillingCost): string {
+		const now = new Date();
+		const year = now.getFullYear();
+		const month = now.getMonth() + 1;
+		
 		const lines = [
 			'GCP Billing Watcher',
-			'─────────────────',
-			`当月コスト: ${this.formatCurrency(cost.amount, cost.currency)}`,
+			'─────────────────────',
+			`📅 ${month}月コスト: ${this.formatCurrency(cost.amount, cost.currency)}`,
+			`📊 ${year}年コスト: ${this.formatCurrency(cost.yearlyAmount, cost.currency)}`,
+			'─────────────────────',
 			`最終更新: ${cost.lastUpdated.toLocaleString('ja-JP')}`,
-			'─────────────────',
+			'─────────────────────',
 			'クリックして今すぐ更新',
 		];
 		return lines.join('\n');

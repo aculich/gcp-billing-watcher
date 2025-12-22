@@ -8,7 +8,8 @@ import { GoogleAuth } from "google-auth-library";
 // 課金データの型定義
 export interface BillingCost {
   currency: string;
-  amount: number;
+  amount: number;           // 当月の課金額
+  yearlyAmount: number;     // 年間の課金額
   lastUpdated: Date;
 }
 
@@ -89,7 +90,7 @@ export class BillingService {
   }
 
   /**
-   * 当月の課金データを取得
+   * 当月と年間の課金データを取得
    * Cloud Billing Export to BigQuery を使用して取得
    */
   async fetchCurrentMonthCost(): Promise<BillingCost> {
@@ -106,16 +107,17 @@ export class BillingService {
       const year = now.getUTCFullYear();
       const month = String(now.getUTCMonth() + 1).padStart(2, "0");
 
-      // BigQuery での課金データクエリ
+      // BigQuery での課金データクエリ（当月と年間を一度に取得）
       const query = `
-				SELECT 
-					SUM(cost) as total_cost,
-					currency
-				FROM \`${this.projectId}.billing_export.${tableName}\`
-				WHERE invoice.month = '${year}${month}'
-				GROUP BY currency
-				LIMIT 1
-			`;
+        SELECT 
+          SUM(CASE WHEN invoice.month = '${year}${month}' THEN cost ELSE 0 END) as monthly_cost,
+          SUM(CASE WHEN invoice.month LIKE '${year}%' THEN cost ELSE 0 END) as yearly_cost,
+          currency
+        FROM \`${this.projectId}.billing_export.${tableName}\`
+        WHERE invoice.month LIKE '${year}%'
+        GROUP BY currency
+        LIMIT 1
+      `;
 
       const response = await fetch(
         `https://bigquery.googleapis.com/bigquery/v2/projects/${this.projectId}/queries`,
@@ -144,10 +146,11 @@ export class BillingService {
 
       if (data.rows && data.rows.length > 0) {
         const row = data.rows[0];
-        if (row && row.f && row.f[0] && row.f[1]) {
+        if (row && row.f && row.f[0] && row.f[1] && row.f[2]) {
           const cost: BillingCost = {
             amount: parseFloat(row.f[0].v ?? "0"),
-            currency: row.f[1].v ?? "USD",
+            yearlyAmount: parseFloat(row.f[1].v ?? "0"),
+            currency: row.f[2].v ?? "USD",
             lastUpdated: new Date(),
           };
           this.lastCost = cost;
@@ -158,6 +161,7 @@ export class BillingService {
       // データがない場合はデフォルト値を返す
       const defaultCost: BillingCost = {
         amount: 0,
+        yearlyAmount: 0,
         currency: "USD",
         lastUpdated: new Date(),
       };

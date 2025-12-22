@@ -2,7 +2,7 @@
   "name": "gcp-billing-watcher",
   "displayName": "GCP Billing Watcher",
   "description": "GCP の当月課金状況を VS Code のステータスバーに表示します",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "kkitase",
   "engines": {
     "vscode": "^1.85.0"
