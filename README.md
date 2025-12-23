@@ -1,15 +1,17 @@
 # GCP Billing Watcher
 
-VS Code のステータスバーに GCP の当月課金状況を表示する拡張機能です。
+VS Code のステータスバーに GCP の課金状況（当月・先月・過去3ヶ月・年間）を表示する拡張機能です。
 
-![Status Bar Example](https://img.shields.io/badge/GCP-$12.34-blue?style=flat-square)
+![Status Bar Example](https://img.shields.io/badge/GCP-$12.34_/_$156.78-blue?style=flat-square)
 
 ## 機能
 
-- 📊 当月の GCP 利用料金をステータスバーに表示
+- 📊 当月・先月・過去3ヶ月・年間の GCP 利用料金を表示
 - 🔄 設定可能な間隔で自動更新（デフォルト 30 分）
 - 🔐 Application Default Credentials に対応
 - 🔍 BigQuery テーブル名を自動発見
+
+> ⚠️ **注意**: Cloud Billing Export は有効化した時点からのデータのみ取得可能です。過去のデータは遡って取得できません。
 
 ---
 
@@ -88,6 +90,10 @@ cd gcp-billing-watcher
 
 > 📝 **重要**: エクスポート開始後、**初回データが蓄積されるまで 24〜48 時間** かかることがあります。
 > テーブルは数分〜数時間で作成されますが、データが入るまで時間がかかります。
+
+> ⚠️ **過去データについて**: Cloud Billing Export は **有効化した時点からのデータのみ** をエクスポートします。
+> 過去のデータ（先月・過去3ヶ月・昨年分など）は遡って取得できません。
+> 過去のデータが必要な場合は、[GCP コンソールの請求レポート](https://console.cloud.google.com/billing/reports) で直接確認してください。
 
 ---
 
