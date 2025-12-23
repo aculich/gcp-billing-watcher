@@ -30,6 +30,47 @@ export function activate(context: vscode.ExtensionContext): void {
 		})
 	);
 
+	// コマンド登録: メニューを表示
+	context.subscriptions.push(
+		vscode.commands.registerCommand('gcpBilling.menu', async () => {
+			const items = [
+				{ label: '$(sync) 今すぐ更新', action: 'refresh' },
+				{ label: '$(link-external) GCP コンソールを開く', action: 'openConsole' },
+				{ label: '$(gear) 設定を開く', action: 'openSettings' },
+			];
+
+			const selected = await vscode.window.showQuickPick(items, {
+				placeHolder: 'GCP Billing Watcher'
+			});
+
+			if (selected) {
+				switch (selected.action) {
+					case 'refresh':
+						await fetchAndUpdate();
+						break;
+					case 'openConsole':
+						await vscode.commands.executeCommand('gcpBilling.openConsole');
+						break;
+					case 'openSettings':
+						await vscode.commands.executeCommand('workbench.action.openSettings', 'gcpBilling');
+						break;
+				}
+			}
+		})
+	);
+
+	// コマンド登録: GCP コンソールを開く
+	context.subscriptions.push(
+		vscode.commands.registerCommand('gcpBilling.openConsole', () => {
+			const config = vscode.workspace.getConfiguration('gcpBilling');
+			const projectId = config.get<string>('projectId');
+			if (projectId) {
+				const url = `https://console.cloud.google.com/billing/reports?project=${projectId}`;
+				vscode.env.openExternal(vscode.Uri.parse(url));
+			}
+		})
+	);
+
 	// コマンド登録: ログを表示
 	context.subscriptions.push(
 		vscode.commands.registerCommand('gcpBilling.showLogs', () => {
@@ -59,6 +100,7 @@ export function activate(context: vscode.ExtensionContext): void {
 function initialize(): void {
 	const config = vscode.workspace.getConfiguration('gcpBilling');
 	const projectId = config.get<string>('projectId', '');
+	const datasetId = config.get<string>('datasetId', 'billing_export');
 	const credentialsPath = config.get<string>('credentialsPath', '');
 	const refreshIntervalMinutes = config.get<number>('refreshIntervalMinutes', 30);
 
@@ -82,10 +124,12 @@ function initialize(): void {
 	// BillingService を初期化
 	billingService = new BillingService(
 		projectId,
+		datasetId,
 		credentialsPath || undefined
 	);
 
 	log(`プロジェクト ID: ${projectId}`);
+	log(`データセット ID: ${datasetId}`);
 	log(`更新間隔: ${refreshIntervalMinutes} 分`);
 
 	// 初回取得
@@ -113,7 +157,12 @@ async function fetchAndUpdate(): Promise<void> {
 	try {
 		const cost = await billingService.fetchCurrentMonthCost();
 		log(`課金データ取得成功: ${cost.currency} ${cost.amount.toFixed(2)}`);
-		statusBar.update(cost);
+		
+		const config = vscode.workspace.getConfiguration('gcpBilling');
+		const budget = config.get<number>('monthlyBudget', 0);
+		const language = config.get<string>('language', 'auto');
+		
+		statusBar.update(cost, budget, language);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		log(`エラー: ${message}`);
@@ -133,23 +182,32 @@ function log(message: string): void {
  * プロジェクト ID の入力を促すダイアログを表示
  */
 async function promptForProjectId(): Promise<void> {
+	// gcloud から現在のプロジェクト取得を試みる
+	let suggestedId = '';
+	try {
+		const { execSync } = require('child_process');
+		suggestedId = execSync('gcloud config get-value project', { encoding: 'utf8' }).trim();
+	} catch (e) {
+		// gcloud が使えない場合は無視
+	}
+
 	const action = await vscode.window.showWarningMessage(
 		'GCP Billing Watcher: プロジェクト ID が設定されていません',
-		'今すぐ設定',
-		'後で設定'
+		'設定する',
+		'後で'
 	);
 
-	if (action === '今すぐ設定') {
+	if (action === '設定する') {
 		const projectId = await vscode.window.showInputBox({
 			prompt: 'GCP プロジェクト ID を入力してください',
 			placeHolder: 'my-project-id',
+			value: suggestedId, // 自動検知した ID を初期値に設定
 			validateInput: (value) => {
 				if (!value || value.trim() === '') {
 					return 'プロジェクト ID を入力してください';
 				}
-				// GCP プロジェクト ID の形式チェック（簡易）
 				if (!/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(value)) {
-					return 'プロジェクト ID の形式が正しくありません（6-30文字、小文字・数字・ハイフンのみ）';
+					return 'プロジェクト ID の形式が正しくありません';
 				}
 				return null;
 			}
@@ -159,8 +217,6 @@ async function promptForProjectId(): Promise<void> {
 			const config = vscode.workspace.getConfiguration('gcpBilling');
 			await config.update('projectId', projectId, vscode.ConfigurationTarget.Global);
 			log(`プロジェクト ID を設定しました: ${projectId}`);
-			vscode.window.showInformationMessage(`GCP Billing Watcher: プロジェクト ID を「${projectId}」に設定しました`);
-			// 設定変更により自動で再初期化される
 		}
 	}
 }

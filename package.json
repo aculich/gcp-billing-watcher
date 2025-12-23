@@ -1,8 +1,8 @@
 {
   "name": "gcp-billing-watcher",
   "displayName": "GCP Billing Watcher",
-  "description": "GCP 課金をステータスバーに表示（今月/年間）。ツールチップで先月・過去3ヶ月も確認可能。※有効化以降のデータのみ",
-  "version": "0.3.2",
+  "description": "%extension.description%",
+  "version": "0.3.5",
   "publisher": "kimisan",
   "engines": {
     "vscode": "^1.85.0"
@@ -22,11 +22,19 @@
     "commands": [
       {
         "command": "gcpBilling.refresh",
-        "title": "GCP Billing: 今すぐ更新"
+        "title": "%command.refresh%"
+      },
+      {
+        "command": "gcpBilling.menu",
+        "title": "%command.menu%"
+      },
+      {
+        "command": "gcpBilling.openConsole",
+        "title": "%command.openConsole%"
       },
       {
         "command": "gcpBilling.showLogs",
-        "title": "GCP Billing: ログを表示"
+        "title": "%command.showLogs%"
       }
     ],
     "configuration": {
@@ -35,15 +43,49 @@
         "gcpBilling.projectId": {
           "type": "string",
           "default": "",
-          "description": "監視対象の GCP プロジェクト ID",
+          "description": "%config.projectId%",
           "order": 1
+        },
+        "gcpBilling.datasetId": {
+          "type": "string",
+          "default": "billing_export",
+          "description": "%config.datasetId%",
+          "order": 2
+        },
+        "gcpBilling.credentialsPath": {
+          "type": "string",
+          "default": "",
+          "description": "%config.credentialsPath%",
+          "order": 3
         },
         "gcpBilling.refreshIntervalMinutes": {
           "type": "number",
           "default": 30,
           "minimum": 5,
-          "description": "更新間隔（分）。最小5分。",
-          "order": 2
+          "description": "%config.refreshInterval%",
+          "order": 4
+        },
+        "gcpBilling.monthlyBudget": {
+          "type": "number",
+          "default": 0,
+          "description": "%config.monthlyBudget%",
+          "order": 5
+        },
+        "gcpBilling.language": {
+          "type": "string",
+          "default": "auto",
+          "enum": [
+            "auto",
+            "en",
+            "ja"
+          ],
+          "enumDescriptions": [
+            "Auto (System Language)",
+            "English",
+            "Japanese"
+          ],
+          "description": "%config.language%",
+          "order": 6
         }
       }
     }

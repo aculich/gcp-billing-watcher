@@ -2,6 +2,12 @@
 
 All notable changes to the "GCP Billing Watcher" extension will be documented in this file.
 
+## [0.3.4] - 2024-12-23
+
+### Fixed
+- Marketplace 版で「fetch failed」エラーが発生する問題を修正
+- グローバル `fetch` の代わりに `google-auth-library` の `request` メソッドを使用するように変更
+
 ## [0.3.2] - 2024-12-23
 
 ### Changed
