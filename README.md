@@ -64,6 +64,11 @@ gcloud config set project <your-project-id>
 ### Stuck at $0.00
 - This is normal for new exports. It takes time for GCP to populate the BigQuery tables.
 
+### Difference between GCP Console and this extension
+- **Latency**: BigQuery exports occur multiple times a day, but there is a **latency of several hours up to 24 hours**. Values for "today" or "yesterday" may be lower than the real-time values in the GCP Console.
+- **Activation Date**: Data only exists in BigQuery **from the date you enabled the export**. Total costs for the current month will be lower if the export was enabled mid-month.
+- **Aggregated Cost**: The extension displays the **sum of all projects** found in the specified BigQuery table. If some projects are missing, verify that they are linked to the same billing account and that data has been exported.
+
 ---
 
 ## For Developers

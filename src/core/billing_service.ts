@@ -8,7 +8,9 @@ import { GoogleAuth } from "google-auth-library";
 // 課金データの型定義
 export interface BillingCost {
   currency: string;
-  amount: number;           // 当月の課金額
+  amount: number;           // 当月の課金額（割引後）
+  amountBeforeCredits: number; // 当月の課金額（割引前）
+  creditsAmount: number;    // 当月のクレジット額（割引額）
   lastMonthAmount: number;  // 先月の課金額
   last3MonthsAmount: number; // 過去3ヶ月の課金額
   yearlyAmount: number;     // 年間の課金額
@@ -123,13 +125,17 @@ export class BillingService {
       const threeMonthsAgo = `${threeMonthsAgoDate.getFullYear()}${String(threeMonthsAgoDate.getMonth() + 1).padStart(2, "0")}`;
 
       // BigQuery での課金データクエリ（当月・先月・過去3ヶ月・年間を一度に取得）
+      // クレジット（割引）を考慮するために cost + SUM(c.amount) を計算する
+      // クレジット額そのものも取得する
       const query = `
         SELECT 
-          SUM(CASE WHEN invoice.month = '${currentMonth}' THEN cost ELSE 0 END) as monthly_cost,
-          SUM(CASE WHEN invoice.month = '${lastMonth}' THEN cost ELSE 0 END) as last_month_cost,
-          SUM(CASE WHEN invoice.month >= '${threeMonthsAgo}' AND invoice.month <= '${currentMonth}' THEN cost ELSE 0 END) as last_3months_cost,
-          SUM(CASE WHEN invoice.month LIKE '${year}%' THEN cost ELSE 0 END) as yearly_cost,
-          currency
+          SUM(CASE WHEN invoice.month = '${currentMonth}' THEN cost + (SELECT IFNULL(SUM(amount), 0) FROM UNNEST(credits)) ELSE 0 END) as monthly_cost,
+          SUM(CASE WHEN invoice.month = '${lastMonth}' THEN cost + (SELECT IFNULL(SUM(amount), 0) FROM UNNEST(credits)) ELSE 0 END) as last_month_cost,
+          SUM(CASE WHEN invoice.month >= '${threeMonthsAgo}' AND invoice.month <= '${currentMonth}' THEN cost + (SELECT IFNULL(SUM(amount), 0) FROM UNNEST(credits)) ELSE 0 END) as last_3months_cost,
+          SUM(CASE WHEN invoice.month LIKE '${year}%' THEN cost + (SELECT IFNULL(SUM(amount), 0) FROM UNNEST(credits)) ELSE 0 END) as yearly_cost,
+          currency,
+          SUM(CASE WHEN invoice.month = '${currentMonth}' THEN cost ELSE 0 END) as monthly_cost_before_credits,
+          SUM(CASE WHEN invoice.month = '${currentMonth}' THEN (SELECT IFNULL(SUM(amount), 0) FROM UNNEST(credits)) ELSE 0 END) as monthly_credits
         FROM \`${this.projectId}.${this.datasetId}.${tableName}\`
         GROUP BY currency
         LIMIT 1
@@ -151,13 +157,15 @@ export class BillingService {
 
       if (data.rows && data.rows.length > 0) {
         const row = data.rows[0];
-        if (row && row.f && row.f.length >= 5) {
+        if (row && row.f && row.f.length >= 7) {
           const cost: BillingCost = {
             amount: parseFloat(row.f[0].v ?? "0"),
             lastMonthAmount: parseFloat(row.f[1].v ?? "0"),
             last3MonthsAmount: parseFloat(row.f[2].v ?? "0"),
             yearlyAmount: parseFloat(row.f[3].v ?? "0"),
             currency: row.f[4].v ?? "USD",
+            amountBeforeCredits: parseFloat(row.f[5].v ?? "0"),
+            creditsAmount: parseFloat(row.f[6].v ?? "0"),
             lastUpdated: new Date(),
           };
           this.lastCost = cost;
@@ -168,6 +176,8 @@ export class BillingService {
       // データがない場合はデフォルト値を返す
       const defaultCost: BillingCost = {
         amount: 0,
+        amountBeforeCredits: 0,
+        creditsAmount: 0,
         lastMonthAmount: 0,
         last3MonthsAmount: 0,
         yearlyAmount: 0,

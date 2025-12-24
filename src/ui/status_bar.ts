@@ -128,9 +128,12 @@ export class StatusBarManager {
 
 		const labels = {
 			title: 'GCP Billing Watcher',
-			month: isJa ? `${month}月` : `Month: ${month}`,
+			currentCost: isJa ? '現在のコスト' : 'Current Cost',
+			beforeCredits: isJa ? '割引前' : 'Before Credits',
+			credits: isJa ? '割引額' : 'Credits',
+			total: isJa ? '小計' : 'Subtotal',
 			budget: isJa ? '予算' : 'Budget',
-			lastMonth: isJa ? `${lastMonth}月` : `Last Month: ${lastMonth}`,
+			lastMonth: isJa ? `${lastMonth}月 (確定)` : `Last Month (${lastMonth})`,
 			last3Months: isJa ? '過去3ヶ月' : 'Last 3 Months',
 			yearly: isJa ? `${now.getFullYear()}年間` : `Yearly (${now.getFullYear()})`,
 			lastUpdated: isJa ? '最終更新' : 'Last Updated',
@@ -140,7 +143,10 @@ export class StatusBarManager {
 		const lines = [
 			labels.title,
 			'─────────────────────',
-			`📅 ${labels.month}: ${this.formatCurrency(cost.amount, cost.currency, locale)}`,
+			`💰 ${labels.currentCost}:`,
+			`   ${labels.beforeCredits}: ${this.formatCurrency(cost.amountBeforeCredits, cost.currency, locale)}`,
+			`   ${labels.credits}: ${this.formatCurrency(cost.creditsAmount, cost.currency, locale)}`,
+			`   ${labels.total}: ${this.formatCurrency(cost.amount, cost.currency, locale)}`,
 		];
 
 		// 予算情報の表示
