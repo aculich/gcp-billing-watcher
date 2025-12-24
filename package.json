@@ -2,7 +2,7 @@
   "name": "gcp-billing-watcher",
   "displayName": "GCP Billing Watcher",
   "description": "Display GCP billing (current month/year) in the status bar. Check details for last month and last 3 months in the tooltip. *Only for data after activation.",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "publisher": "kimisan",
   "license": "MIT",
   "engines": {
