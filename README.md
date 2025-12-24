@@ -58,6 +58,9 @@ gcloud config set project <your-project-id>
 - Verify `gcloud auth application-default login` has been executed.
 - If you just enabled export, data might be empty. Please wait up to 24-48 hours.
 
+### "unable to get issuer certificate" (Proxy environment)
+- If you are behind a corporate proxy and encounter SSL errors, enable `gcpBilling.skipSslVerification` in settings. *Note: Use at your own risk.*
+
 ### Stuck at $0.00
 - This is normal for new exports. It takes time for GCP to populate the BigQuery tables.
 

@@ -2,7 +2,7 @@
   "name": "gcp-billing-watcher",
   "displayName": "GCP Billing Watcher",
   "description": "%extension.description%",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "publisher": "kimisan",
   "engines": {
     "vscode": "^1.85.0"
@@ -87,10 +87,10 @@
           "description": "%config.language%",
           "order": 6
         },
-        "gcpBilling.strictSsl": {
+        "gcpBilling.skipSslVerification": {
           "type": "boolean",
-          "default": true,
-          "description": "%config.strictSsl%",
+          "default": false,
+          "description": "%config.skipSslVerification%",
           "order": 7
         }
       }

@@ -56,6 +56,9 @@ gcloud config set project <your-project-id>
 - `gcloud auth application-default login` が完了しているか確認してください。
 - 初回設定直後はデータが空のためエラーになることがあります。24時間ほどお待ちください。
 
+### "unable to get issuer certificate" エラー（プロキシ環境）
+- 企業プロキシなどで SSL 証明書のエラーが発生する場合、設定の `gcpBilling.skipSslVerification` を有効にしてください。※自己責任での使用をお願いします。
+
 ### 表示が $0.00 のまま
 - 正常です。GCP 側でデータが蓄積されるまで時間がかかります。
 

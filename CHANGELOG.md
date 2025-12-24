@@ -2,14 +2,6 @@
 
 All notable changes to the "GCP Billing Watcher" extension will be documented in this file.
 
-## [0.3.9] - 2024-12-24
-
-### Added
-- `gcpBilling.strictSsl` 設定を追加。特定のネットワーク環境での SSL 証明書エラーを回避可能に。
-
-### Fixed
-- Marketplace 版で発生していた「unable to get issuer certificate」エラーを修正。
-
 ## [0.3.4] - 2024-12-23
 
 ### Fixed
