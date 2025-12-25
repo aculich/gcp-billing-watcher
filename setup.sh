@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 # ╔════════════════════════════════════════════════════════════════════╗
-# ║  GCP Billing Watcher - セットアップスクリプト                     ║
+# ║  Google Cloud Billing Watcher - セットアップスクリプト           ║
 # ╚════════════════════════════════════════════════════════════════════╝
 #
 # このスクリプトは以下を自動で実行します：
 #   1. gcloud CLI がインストールされているか確認
 #   2. Application Default Credentials（認証情報）の確認
 #   3. BigQuery データセットの作成
-#   4. 次のステップ（GCP コンソールでの設定）を案内
+#   4. 次のステップ（Google Cloud コンソールでの設定）を案内
 #
 # 使い方:
 #   ./setup.sh <project-id> [dataset-name] [location]
@@ -18,7 +18,7 @@
 #   ./setup.sh my-project billing_export asia-northeast1  # 東京リージョン
 #
 # 引数:
-#   project-id   : GCP プロジェクト ID（必須）
+#   project-id   : Google Cloud プロジェクト ID（必須）
 #   dataset-name : BigQuery データセット名（デフォルト: billing_export）
 #   location     : データセットのロケーション（デフォルト: US）
 #                  東京なら asia-northeast1 を指定
@@ -46,7 +46,7 @@ error()   { echo -e "${RED}❌ $1${NC}"; }
 # ╚════════════════════════════════════════════════════════════════════╝
 echo ""
 echo "========================================"
-echo "  GCP Billing Watcher セットアップ"
+echo "  Google Cloud Billing Watcher セットアップ"
 echo "========================================"
 echo ""
 
@@ -58,7 +58,7 @@ if [ -z "$1" ]; then
     echo "使い方: $0 <project-id> [dataset-name] [location]"
     echo ""
     echo "引数:"
-    echo "  project-id   : GCP プロジェクト ID（必須）"
+    echo "  project-id   : Google Cloud プロジェクト ID（必須）"
     echo "  dataset-name : データセット名（デフォルト: billing_export）"
     echo "  location     : ロケーション（デフォルト: US）"
     echo ""
@@ -109,7 +109,7 @@ success "gcloud CLI: $GCLOUD_VERSION"
 # ╔════════════════════════════════════════════════════════════════════╗
 # ║  Step 2: 認証状態の確認                                            ║
 # ║  → Application Default Credentials (ADC) が設定されているか       ║
-# ║  → ADC は VS Code 拡張機能が GCP に接続するために必要             ║
+# ║  → ADC は VS Code 拡張機能が Google Cloud に接続するために必要   ║
 # ╚════════════════════════════════════════════════════════════════════╝
 info "Step 2/4: 認証状態を確認中..."
 
@@ -125,7 +125,7 @@ else
     warn "Application Default Credentials が見つかりません"
     echo ""
     echo "💡 ADC とは？"
-    echo "   ローカル環境から GCP に接続するための認証情報です。"
+    echo "   ローカル環境から Google Cloud に接続するための認証情報です。"
     echo "   VS Code 拡張機能が BigQuery からデータを取得するために必要です。"
     echo ""
     
@@ -183,7 +183,7 @@ else
     bq --project_id="$PROJECT_ID" mk \
         --dataset \
         --location="$LOCATION" \
-        --description="GCP Billing Export - 課金データエクスポート用" \
+        --description="Google Cloud Billing Export - 課金データエクスポート用" \
         "$DATASET_NAME"
     
     if [ $? -eq 0 ]; then
@@ -201,14 +201,14 @@ fi
 
 # ╔════════════════════════════════════════════════════════════════════╗
 # ║  Step 4: 次のステップの案内                                        ║
-# ║  → GCP コンソールでの手動設定が必要                               ║
+# ║  → Google Cloud コンソールでの手動設定が必要                     ║
 # ╚════════════════════════════════════════════════════════════════════╝
 echo ""
 echo "========================================"
 info "Step 4/4: 残りの手順（手動）"
 echo "========================================"
 echo ""
-warn "⚡ 課金エクスポートの有効化は GCP コンソールで行う必要があります"
+warn "⚡ 課金エクスポートの有効化は Google Cloud コンソールで行う必要があります"
 echo ""
 echo "┌─────────────────────────────────────────────────────────────┐"
 echo "│ 1. 以下の URL にアクセス:                                    │"
@@ -235,7 +235,7 @@ echo "========================================"
 echo ""
 echo "📝 次のステップ:"
 echo ""
-echo "   1. 上記の GCP コンソールで課金エクスポートを有効化"
+echo "   1. 上記の Google Cloud コンソールで課金エクスポートを有効化"
 echo "      （データが蓄積されるまで 24〜48 時間かかります）"
 echo ""
 echo "   2. VS Code 拡張機能をインストール:"

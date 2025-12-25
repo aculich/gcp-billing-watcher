@@ -1,5 +1,5 @@
 /**
- * GCP Billing Watcher - Extension Entry Point
+ * Google Cloud Billing Watcher - Extension Entry Point
  * VS Code 拡張機能のエントリポイント
  */
 
@@ -16,7 +16,7 @@ let outputChannel: vscode.OutputChannel;
  * 拡張機能のアクティベーション
  */
 export function activate(context: vscode.ExtensionContext): void {
-  outputChannel = vscode.window.createOutputChannel("GCP Billing Watcher");
+  outputChannel = vscode.window.createOutputChannel("Google Cloud Billing Watcher");
   log("拡張機能を起動しています...");
 
   statusBar = new StatusBarManager();
@@ -36,14 +36,14 @@ export function activate(context: vscode.ExtensionContext): void {
       const items = [
         { label: "$(sync) 今すぐ更新", action: "refresh" },
         {
-          label: "$(link-external) GCP コンソールを開く",
+          label: "$(link-external) Google Cloud コンソールを開く",
           action: "openConsole",
         },
         { label: "$(gear) 設定を開く", action: "openSettings" },
       ];
 
       const selected = await vscode.window.showQuickPick(items, {
-        placeHolder: "GCP Billing Watcher",
+        placeHolder: "Google Cloud Billing Watcher",
       });
 
       if (selected) {
@@ -65,7 +65,7 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
-  // コマンド登録: GCP コンソールを開く
+  // コマンド登録: Google Cloud コンソールを開く
   context.subscriptions.push(
     vscode.commands.registerCommand("gcpBilling.openConsole", () => {
       const config = vscode.workspace.getConfiguration("gcpBilling");
@@ -213,14 +213,14 @@ async function promptForProjectId(): Promise<void> {
   }
 
   const action = await vscode.window.showWarningMessage(
-    "GCP Billing Watcher: プロジェクト ID が設定されていません",
+    "Google Cloud Billing Watcher: プロジェクト ID が設定されていません",
     "設定する",
     "後で"
   );
 
   if (action === "設定する") {
     const projectId = await vscode.window.showInputBox({
-      prompt: "GCP プロジェクト ID を入力してください",
+      prompt: "プロジェクト ID を入力してください",
       placeHolder: "my-project-id",
       value: suggestedId, // 自動検知した ID を初期値に設定
       validateInput: (value) => {

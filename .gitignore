@@ -21,6 +21,7 @@ release/
 
 # Environment
 .env
+.env.local
 
 # Private notes and operation scripts
 note/

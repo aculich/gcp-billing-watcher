@@ -1,8 +1,8 @@
 {
   "name": "gcp-billing-watcher",
-  "displayName": "GCP Billing Watcher",
-  "description": "Display GCP billing (current month/year) in the status bar. Check details for last month and last 3 months in the tooltip. *Only for data after activation.",
-  "version": "0.3.12",
+  "displayName": "Google Cloud Billing Watcher",
+  "description": "Display Google Cloud billing status (current month, annual total, etc.) in real-time in the status bar.",
+  "version": "0.3.13",
   "publisher": "kimisan",
   "license": "MIT",
   "engines": {
@@ -23,28 +23,28 @@
     "commands": [
       {
         "command": "gcpBilling.refresh",
-        "title": "GCP Billing: Refresh Now"
+        "title": "Google Cloud Billing: Refresh Now"
       },
       {
         "command": "gcpBilling.menu",
-        "title": "GCP Billing: Show Menu"
+        "title": "Google Cloud Billing: Show Menu"
       },
       {
         "command": "gcpBilling.openConsole",
-        "title": "GCP Billing: Open GCP Console"
+        "title": "Google Cloud Billing: Go to Google Cloud Console"
       },
       {
         "command": "gcpBilling.showLogs",
-        "title": "GCP Billing: Show Logs"
+        "title": "Google Cloud Billing: Show Logs"
       }
     ],
     "configuration": {
-      "title": "GCP Billing Watcher",
+      "title": "Google Cloud Billing Watcher",
       "properties": {
         "gcpBilling.projectId": {
           "type": "string",
           "default": "",
-          "description": "GCP Project ID to monitor",
+          "description": "Project ID",
           "order": 1
         },
         "gcpBilling.datasetId": {
@@ -69,7 +69,7 @@
         "gcpBilling.monthlyBudget": {
           "type": "number",
           "default": 0,
-          "description": "Monthly budget (GCP currency unit, e.g. USD/JPY). Set to 0 to disable alerts.",
+          "description": "Monthly budget (Currency unit, e.g. USD/JPY). Set to 0 to disable alerts.",
           "order": 5
         },
         "gcpBilling.language": {

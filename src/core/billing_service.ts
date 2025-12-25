@@ -1,6 +1,6 @@
 /**
- * GCP Billing Watcher - Billing Service
- * GCP の課金データを取得するコアロジック
+ * Google Cloud Billing Watcher - Billing Service
+ * Google Cloud の課金データを取得するコアロジック
  */
 
 import { GoogleAuth } from "google-auth-library";
@@ -55,7 +55,7 @@ export class BillingService {
 
   /**
    * datasetId 内の課金テーブル名を自動発見
-   * GCP は gcp_billing_export_v1_XXXXXX または gcp_billing_export_resource_v1_XXXXXX のように名前を付けるため
+   * Google Cloud は gcp_billing_export_v1_XXXXXX または gcp_billing_export_resource_v1_XXXXXX のように名前を付けるため
    */
   private async discoverBillingTableName(): Promise<string> {
     // キャッシュがあれば再利用

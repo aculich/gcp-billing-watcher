@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "GCP Billing Watcher" extension will be documented in this file.
+All notable changes to the "Google Cloud Billing Watcher" extension will be documented in this file.
 
 ## [0.3.11] - 2024-12-24
 
@@ -55,6 +55,6 @@ All notable changes to the "GCP Billing Watcher" extension will be documented in
 
 ### Added
 - 初回リリース
-- 当月の GCP 課金額をステータスバーに表示
+- 当月の Google Cloud 課金額をステータスバーに表示
 - Application Default Credentials による認証
 - 設定可能な更新間隔

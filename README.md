@@ -1,8 +1,8 @@
-# GCP Billing Watcher
+# Google Cloud Billing Watcher
 
 [日本語の説明はこちら (README_ja.md)](https://github.com/kkitase/gcp-billing-watcher/blob/main/README_ja.md)
 
-A VS Code extension that displays your Google Cloud Platform (GCP) billing status (current month, annual total, etc.) in real-time right in the status bar.
+A VS Code extension that displays your Google Cloud billing status (current month, annual total, etc.) in real-time right in the status bar.
 
 ![Screenshot](assets/screenshot.png)
 
@@ -10,7 +10,7 @@ A VS Code extension that displays your Google Cloud Platform (GCP) billing statu
 
 If you installed this from the Marketplace, follow these 3 simple steps to get started:
 
-### Step 1: Enable Billing Export in GCP Console
+### Step 1: Enable Billing Export in Google Cloud Console
 
 1. Go to the [Billing Export page](https://console.cloud.google.com/billing/export).
 2. Select your **Billing Account**.
@@ -22,7 +22,7 @@ If you installed this from the Marketplace, follow these 3 simple steps to get s
 
 ### Step 2: Authentication (gcloud SDK)
 
-The extension needs access to your GCP resources. Ensure the `gcloud` CLI is installed and authenticated:
+The extension needs access to your Google Cloud resources. Ensure the `gcloud` CLI is installed and authenticated:
 
 ```bash
 # 1. Login to gcloud
@@ -53,8 +53,8 @@ gcloud config set project <your-project-id>
 
 ## Troubleshooting
 
-### Displaying "GCP: Error"
-- Ensure "Billing Export" is correctly configured in the GCP console.
+### Displaying "Google Cloud: Error"
+- Ensure "Billing Export" is correctly configured in the Google Cloud console.
 - Verify `gcloud auth application-default login` has been executed.
 - If you just enabled export, data might be empty. Please wait up to 24-48 hours.
 
@@ -62,10 +62,10 @@ gcloud config set project <your-project-id>
 - If you are behind a corporate proxy and encounter SSL errors, enable `gcpBilling.skipSslVerification` in settings. *Note: Use at your own risk.*
 
 ### Stuck at $0.00
-- This is normal for new exports. It takes time for GCP to populate the BigQuery tables.
+- This is normal for new exports. It takes time for Google Cloud to populate the BigQuery tables.
 
-### Difference between GCP Console and this extension
-- **Latency**: BigQuery exports occur multiple times a day, but there is a **latency of several hours up to 24 hours**. Values for "today" or "yesterday" may be lower than the real-time values in the GCP Console.
+### Difference between Google Cloud Console and this extension
+- **Latency**: BigQuery exports occur multiple times a day, but there is a **latency of several hours up to 24 hours**. Values for "today" or "yesterday" may be lower than the real-time values in the Google Cloud Console.
 - **Activation Date**: Data only exists in BigQuery **from the date you enabled the export**. Total costs for the current month will be lower if the export was enabled mid-month.
 - **Aggregated Cost**: The extension displays the **sum of all projects** found in the specified BigQuery table. If some projects are missing, verify that they are linked to the same billing account and that data has been exported.
 

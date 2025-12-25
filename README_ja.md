@@ -1,6 +1,6 @@
-# GCP Billing Watcher
+# Google Cloud Billing Watcher
 
-VS Code のステータスバーに GCP の課金状況（当月・年間など）をリアルタイムに表示する拡張機能です。
+VS Code のステータスバーに Google Cloud の課金状況（当月・年間など）をリアルタイムに表示する拡張機能です。
 
 ![Screenshot](assets/screenshot.png)
 
@@ -8,7 +8,7 @@ VS Code のステータスバーに GCP の課金状況（当月・年間など�
 
 マーケットプレイスからインストールした方は、以下の3つのステップを行うだけで使い始められます。
 
-### Step 1: GCP コンソールで課金エクスポートを有効化
+### Step 1: Google Cloud コンソールで課金エクスポートを有効化
 
 1. [請求データのエクスポート](https://console.cloud.google.com/billing/export) にアクセスします。
 2. 対象の **請求先アカウント** を選択します。
@@ -20,7 +20,7 @@ VS Code のステータスバーに GCP の課金状況（当月・年間など�
 
 ### Step 2: 認証の設定（gcloud SDK）
 
-拡張機能が GCP にアクセスするために、お使いのマシンに `gcloud` CLI がインストールされ、認証されている必要があります。
+拡張機能が Google Cloud にアクセスするために、お使いのマシンに `gcloud` CLI がインストールされ、認証されている必要があります。
 
 ```bash
 # 1. ログイン
@@ -51,8 +51,8 @@ gcloud config set project <your-project-id>
 
 ## トラブルシューティング
 
-### 「GCP: Error」と表示される
-- GCP コンソールで「課金エクスポート」が正しく設定されているか確認してください。
+### 「Google Cloud: Error」と表示される
+- Google Cloud コンソールで「課金エクスポート」が正しく設定されているか確認してください。
 - `gcloud auth application-default login` が完了しているか確認してください。
 - 初回設定直後はデータが空のためエラーになることがあります。24時間ほどお待ちください。
 
@@ -60,7 +60,7 @@ gcloud config set project <your-project-id>
 - 企業プロキシなどで SSL 証明書のエラーが発生する場合、設定の `gcpBilling.skipSslVerification` を有効にしてください。※自己責任での使用をお願いします。
 
 ### 表示が $0.00 のまま
-- 正常です。GCP 側でデータが蓄積されるまで時間がかかります。
+- 正常です。Google Cloud 側でデータが蓄積されるまで時間がかかります。
 
 ### コンソールのレポートと金額が一致しない
 - **タイムラグ**: BigQuery へのエクスポートは 1 日に数回行われますが、**数時間〜最大24時間の遅延**があります。そのため、「今日」や「昨日」の数値はコンソールのリアルタイム表示よりも低くなることがあります。
