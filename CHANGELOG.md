@@ -2,13 +2,14 @@
 
 All notable changes to the "Google Cloud Billing Watcher" extension will be documented in this file.
 
-## [0.3.15] - 2025-12-25
+## [0.3.16] - 2025-12-25
 
 ### Changed
 - 拡張機能の名称を "GCP Billing Watcher" から **"Google Cloud Billing Watcher"** に変更
 - ステータスバーのプレフィックスを `GCP:` から **`Google Cloud:`** に変更
 - コマンド名のプレフィックスを `GCP Billing:` から **`Google Cloud Billing:`** に統一
 - README、設定項目の説明文、ソースコード内のメッセージを一括修正して「Google Cloud」表記に統一
+- GitHub リリースノートの改善（名称変更サマリおよび各マーケットプレイスへのリンク追加）
 
 ## [0.3.11] - 2024-12-24
 
