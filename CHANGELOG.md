@@ -2,7 +2,7 @@
 
 All notable changes to the "Google Cloud Billing Watcher" extension will be documented in this file.
 
-## [0.3.14] - 2025-12-25
+## [0.3.15] - 2025-12-25
 
 ### Changed
 - 拡張機能の名称を "GCP Billing Watcher" から **"Google Cloud Billing Watcher"** に変更

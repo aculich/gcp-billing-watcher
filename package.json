@@ -2,7 +2,7 @@
   "name": "gcp-billing-watcher",
   "displayName": "Google Cloud Billing Watcher",
   "description": "Display Google Cloud billing status (current month, annual total, etc.) in real-time in the status bar.",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "publisher": "kimisan",
   "license": "MIT",
   "engines": {
