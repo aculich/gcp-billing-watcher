@@ -1,0 +1,12 @@
+---
+description: Scope boundaries for upstream PRs vs personal fork changes
+alwaysApply: true
+---
+
+# Upstream PR Scope
+
+**In scope for upstream PRs:** Bug fixes, i18n/localization, documentation improvements, code quality improvements that benefit all users. Shell scripts (`setup.sh`, `scripts/release.sh`) are user-facing (developers are users) and belong in upstream PRs when improving them.
+
+**Fork-only — never in upstream PRs:** Publisher/name identity changes (`aculich` publisher, `aculich-gcp-billing-watcher` name), CI/CD workflows (`.github/workflows/`), personal marketplace infrastructure, machine-specific deployment scripts.
+
+On `upstream-pr/*` branches, `package.json` fields `publisher`, `name`, `displayName`, and `repository.url` must match upstream values (e.g. publisher `kimisan`, name `gcp-billing-watcher`, repo `kkitase/gcp-billing-watcher`).

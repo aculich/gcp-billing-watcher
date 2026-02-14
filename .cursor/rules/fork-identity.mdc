@@ -1,0 +1,13 @@
+---
+description: Personal fork identity, remotes, and branching conventions
+alwaysApply: true
+---
+
+# Fork Identity
+
+- **Remotes:** `origin` = aculich/gcp-billing-watcher (fork), `upstream` = kkitase/gcp-billing-watcher (original).
+- **main** is the personal mainline and may diverge from upstream.
+- **upstream-pr/\*** branches are created from `upstream/main` for clean upstream contributions only.
+- On `main`, personal fork identity in `package.json`: publisher `aculich`, name `aculich-gcp-billing-watcher`, displayName `Google Cloud Billing Watcher (aculich)`, repository.url pointing to aculich/gcp-billing-watcher.
+- VSIX files from the fork are named `aculich-gcp-billing-watcher-x.y.z.vsix`.
+- Target machines: sidequest (this laptop), workhorse (other laptop). GitHub Releases serve as the personal extension marketplace.

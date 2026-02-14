@@ -1,0 +1,17 @@
+---
+description: Conventions for writing clean upstream PRs to kkitase/gcp-billing-watcher
+alwaysApply: true
+---
+
+# Upstream PR Strategy
+
+When contributing to kkitase/gcp-billing-watcher via pull request:
+
+- **PR titles** use conventional commits: `feat:`, `fix:`, `docs:`, `chore:` followed by a short, clear summary.
+- **PR body** is 2–5 sentences max. Structure: motivation (1 sentence), what changed (1–2 sentences), preservation note (1 sentence). The diff speaks for itself — do not duplicate implementation details.
+- Never include AI-generated boilerplate, long bullet lists, or implementation walkthroughs in the PR body. Keep it easy for the maintainer to scan.
+- Never mention that changes were AI-generated or AI-assisted.
+- No unrelated formatting changes; no new dependencies unless essential.
+- One concern per PR. If scope creeps, split into separate PRs.
+- Upstream PR branches use the naming convention `upstream-pr/<topic>` and are created from `upstream/main`.
+- These branches must never contain personal fork changes (publisher, name, CI/CD, etc.).
