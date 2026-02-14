@@ -2,7 +2,7 @@
   "name": "aculich-gcp-billing-watcher",
   "displayName": "Google Cloud Billing Watcher (aculich)",
   "description": "%description%",
-  "version": "0.3.17",
+  "version": "0.4.0",
   "publisher": "aculich",
   "license": "MIT",
   "engines": {
