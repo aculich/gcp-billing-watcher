@@ -11,6 +11,8 @@ release/
 # Credentials (VERY IMPORTANT!)
 *.json
 !package.json
+!package.nls.json
+!package.nls.ja.json
 !tsconfig.json
 
 # macOS

@@ -1,0 +1,19 @@
+{
+  "displayName": "Google Cloud Billing Watcher",
+  "description": "Display Google Cloud billing status (current month, annual total, etc.) in real-time in the status bar.",
+  "config.title": "Google Cloud Billing Watcher",
+  "command.refresh.title": "Google Cloud Billing: Refresh Now",
+  "command.menu.title": "Google Cloud Billing: Show Menu",
+  "command.openConsole.title": "Google Cloud Billing: Go to Google Cloud Console",
+  "command.showLogs.title": "Google Cloud Billing: Show Logs",
+  "config.projectId.description": "Project ID",
+  "config.datasetId.description": "BigQuery dataset name. Default is billing_export.",
+  "config.credentialsPath.description": "Path to service account JSON key file (uses ADC if omitted).",
+  "config.refreshIntervalMinutes.description": "Refresh interval (minutes). Minimum 5 minutes.",
+  "config.monthlyBudget.description": "Monthly budget (Currency unit, e.g. USD/JPY). Set to 0 to disable alerts.",
+  "config.language.description": "Language to use for the extension UI.",
+  "config.language.auto": "Auto (System Language)",
+  "config.language.en": "English",
+  "config.language.ja": "Japanese",
+  "config.skipSslVerification.description": "Skip SSL certificate verification. Use this if you encounter 'unable to get issuer certificate' errors in corporate proxy environments. USE AT YOUR OWN RISK."
+}

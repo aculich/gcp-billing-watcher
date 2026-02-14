@@ -1,0 +1,19 @@
+{
+  "displayName": "Google Cloud Billing Watcher",
+  "description": "ステータスバーで Google Cloud の請求状況（当月・年間合計など）をリアルタイム表示します。",
+  "config.title": "Google Cloud Billing Watcher",
+  "command.refresh.title": "Google Cloud Billing: 今すぐ更新",
+  "command.menu.title": "Google Cloud Billing: メニューを表示",
+  "command.openConsole.title": "Google Cloud Billing: Google Cloud コンソールを開く",
+  "command.showLogs.title": "Google Cloud Billing: ログを表示",
+  "config.projectId.description": "プロジェクト ID",
+  "config.datasetId.description": "BigQuery データセット名。デフォルトは billing_export。",
+  "config.credentialsPath.description": "サービスアカウント JSON キーファイルのパス（未指定時は ADC を使用）。",
+  "config.refreshIntervalMinutes.description": "更新間隔（分）。最小 5 分。",
+  "config.monthlyBudget.description": "月間予算（通貨単位。例: USD/JPY）。0 でアラート無効。",
+  "config.language.description": "拡張機能の UI に使用する言語。",
+  "config.language.auto": "自動（システム言語）",
+  "config.language.en": "英語",
+  "config.language.ja": "日本語",
+  "config.skipSslVerification.description": "SSL 証明書の検証をスキップ。企業プロキシで「unable to get issuer certificate」が出る場合に有効化。自己責任で使用してください。"
+}

@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# リリース自動化スクリプト
-# 使用方法: ./scripts/release.sh [patch|minor|major] "Release message"
+# JA: リリース自動化スクリプト
+# EN: Release automation script
+# JA: 使用方法: ./scripts/release.sh [patch|minor|major] "Release message"
+# EN: Usage:   ./scripts/release.sh [patch|minor|major] "Release message"
 
 set -e
 
@@ -9,40 +11,41 @@ VERSION_TYPE=${1:-patch}
 MESSAGE=${2:-"Update"}
 
 if [ -z "$VSCE_PAT" ]; then
-  echo "エラー: VSCE_PAT 環境変数が設定されていません。"
+  echo "Error: VSCE_PAT environment variable is not set."
   exit 1
 fi
 
-echo "--- リリースプロセスを開始します: $VERSION_TYPE ---"
+# JA: 1. リリースプロセスを開始
+echo "--- Starting release process: $VERSION_TYPE ---"
 
-# 1. バージョンアップ
-echo "--- バージョンを更新中 ($VERSION_TYPE) ---"
+# JA: 2. バージョンアップ
+echo "--- Bumping version ($VERSION_TYPE) ---"
 NEW_VERSION=$(npm version $VERSION_TYPE --no-git-tag-version)
-echo "新しいバージョン: $NEW_VERSION"
+echo "New version: $NEW_VERSION"
 
-# 2. ビルド
-echo "--- ビルド中 ---"
+# JA: 3. ビルド
+echo "--- Building ---"
 npm run compile
 
-# 3. パッケージング
-echo "--- VSIX を作成中 ---"
+# JA: 4. パッケージング（VSIX を作成）
+echo "--- Creating VSIX ---"
 mkdir -p release
 VSIX_FILE="release/gcp-billing-watcher-${NEW_VERSION#v}.vsix"
 npx @vscode/vsce package --out "$VSIX_FILE"
 
-# 4. GitHub へのプッシュとタグ付け
-echo "--- GitHub へプッシュ中 ---"
+# JA: 5. GitHub へのプッシュとタグ付け
+echo "--- Pushing to GitHub ---"
 git add .
 git commit -m "chore: release $NEW_VERSION - $MESSAGE"
 git tag "$NEW_VERSION"
 git push origin main --tags
 
-# 5. GitHub リリースページ作成
-echo "--- GitHub リリースを作成中 ---"
+# JA: 6. GitHub リリースページ作成
+echo "--- Creating GitHub release ---"
 gh release create "$NEW_VERSION" "$VSIX_FILE" --title "$NEW_VERSION" --notes "$MESSAGE"
 
-# 6. Marketplace への公開
-echo "--- Marketplace へ公開中 ---"
+# JA: 7. Marketplace への公開
+echo "--- Publishing to Marketplace ---"
 npx @vscode/vsce publish --pat "$VSCE_PAT"
 
-echo "--- リリースが正常に完了しました: $NEW_VERSION ---"
+echo "--- Release completed: $NEW_VERSION ---"

@@ -1,246 +1,222 @@
 #!/bin/bash
 #
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║  Google Cloud Billing Watcher - セットアップスクリプト           ║
-# ╚════════════════════════════════════════════════════════════════════╝
+# JA: Google Cloud Billing Watcher - セットアップスクリプト
+# EN: Google Cloud Billing Watcher - Setup script
 #
-# このスクリプトは以下を自動で実行します：
-#   1. gcloud CLI がインストールされているか確認
-#   2. Application Default Credentials（認証情報）の確認
-#   3. BigQuery データセットの作成
-#   4. 次のステップ（Google Cloud コンソールでの設定）を案内
+# JA: このスクリプトは以下を自動で実行します：
+# EN: This script:
+#   1. Checks that gcloud CLI is installed
+#   2. Verifies Application Default Credentials
+#   3. Creates the BigQuery dataset
+#   4. Guides you through the remaining steps in Google Cloud Console
 #
-# 使い方:
+# Usage / 使い方:
 #   ./setup.sh <project-id> [dataset-name] [location]
 #
-# 例:
-#   ./setup.sh my-project                           # US リージョン
-#   ./setup.sh my-project billing_export asia-northeast1  # 東京リージョン
+# Examples / 例:
+#   ./setup.sh my-project
+#   ./setup.sh my-project billing_export asia-northeast1
 #
-# 引数:
-#   project-id   : Google Cloud プロジェクト ID（必須）
-#   dataset-name : BigQuery データセット名（デフォルト: billing_export）
-#   location     : データセットのロケーション（デフォルト: US）
-#                  東京なら asia-northeast1 を指定
+# JA: 引数: project-id（必須）, dataset-name（デフォルト: billing_export）, location（デフォルト: US）
+# EN: Arguments: project-id (required), dataset-name (default: billing_export), location (default: US)
 #
 
-# ----- 設定 ----- #
-# エラーが発生したらスクリプトを終了する
+# JA: エラーが発生したらスクリプトを終了する
 set -e
 
-# ----- 色の定義（ターミナル出力を見やすくするため） ----- #
-RED='\033[0;31m'      # エラー表示用
-GREEN='\033[0;32m'    # 成功表示用
-YELLOW='\033[1;33m'   # 警告表示用
-BLUE='\033[0;34m'     # 情報表示用
-NC='\033[0m'          # 色をリセット
+# JA: 色の定義（ターミナル出力を見やすくするため）
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
 
-# ----- ヘルパー関数（メッセージ表示用） ----- #
+# JA: ヘルパー関数（メッセージ表示用）
 info()    { echo -e "${BLUE}ℹ️  $1${NC}"; }
 success() { echo -e "${GREEN}✅ $1${NC}"; }
 warn()    { echo -e "${YELLOW}⚠️  $1${NC}"; }
 error()   { echo -e "${RED}❌ $1${NC}"; }
 
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║  ヘッダー表示                                                      ║
-# ╚════════════════════════════════════════════════════════════════════╝
+# JA: ヘッダー表示
 echo ""
 echo "========================================"
-echo "  Google Cloud Billing Watcher セットアップ"
+echo "  Google Cloud Billing Watcher Setup"
 echo "========================================"
 echo ""
 
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║  引数のチェック                                                    ║
-# ╚════════════════════════════════════════════════════════════════════╝
-# 第1引数（プロジェクトID）が指定されていない場合は使い方を表示して終了
+# JA: 第1引数（プロジェクトID）が指定されていない場合は使い方を表示して終了
 if [ -z "$1" ]; then
-    echo "使い方: $0 <project-id> [dataset-name] [location]"
+    echo "Usage: $0 <project-id> [dataset-name] [location]"
     echo ""
-    echo "引数:"
-    echo "  project-id   : Google Cloud プロジェクト ID（必須）"
-    echo "  dataset-name : データセット名（デフォルト: billing_export）"
-    echo "  location     : ロケーション（デフォルト: US）"
+    echo "Arguments:"
+    echo "  project-id   : Google Cloud project ID (required)"
+    echo "  dataset-name : Dataset name (default: billing_export)"
+    echo "  location     : Location (default: US)"
     echo ""
-    echo "例:"
+    echo "Examples:"
     echo "  $0 my-project"
     echo "  $0 my-project billing_export asia-northeast1"
     echo ""
     exit 1
 fi
 
-# 引数を変数に格納（デフォルト値を設定）
+# JA: 引数を変数に格納（デフォルト値を設定）
 PROJECT_ID="$1"
-DATASET_NAME="${2:-billing_export}"    # 未指定なら billing_export
-LOCATION="${3:-US}"                     # 未指定なら US
+DATASET_NAME="${2:-billing_export}"
+LOCATION="${3:-US}"
 
-# 設定内容を表示
-echo "📋 設定内容:"
-echo "   プロジェクト ID : $PROJECT_ID"
-echo "   データセット名 : $DATASET_NAME"
-echo "   ロケーション   : $LOCATION"
+# JA: 設定内容を表示
+echo "📋 Settings:"
+echo "   Project ID  : $PROJECT_ID"
+echo "   Dataset     : $DATASET_NAME"
+echo "   Location    : $LOCATION"
 echo ""
 
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║  Step 1: gcloud CLI の確認                                        ║
-# ║  → Google Cloud SDK がインストールされているかチェック            ║
-# ╚════════════════════════════════════════════════════════════════════╝
-info "Step 1/4: gcloud CLI を確認中..."
+# JA: Step 1: gcloud CLI の確認（Google Cloud SDK がインストールされているかチェック）
+info "Step 1/4: Checking gcloud CLI..."
 
-# gcloud コマンドが存在するかチェック
+# JA: gcloud コマンドが存在するかチェック
 if ! command -v gcloud &> /dev/null; then
-    error "gcloud コマンドが見つかりません"
+    error "gcloud command not found"
     echo ""
-    echo "Google Cloud SDK をインストールしてください:"
+    echo "Please install the Google Cloud SDK:"
     echo ""
     echo "  Mac (Homebrew):"
     echo "    brew install --cask google-cloud-sdk"
     echo ""
-    echo "  その他:"
+    echo "  Other:"
     echo "    https://cloud.google.com/sdk/docs/install"
     echo ""
     exit 1
 fi
 
-# バージョンを表示
+# JA: バージョンを表示
 GCLOUD_VERSION=$(gcloud --version | head -n 1)
 success "gcloud CLI: $GCLOUD_VERSION"
 
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║  Step 2: 認証状態の確認                                            ║
-# ║  → Application Default Credentials (ADC) が設定されているか       ║
-# ║  → ADC は VS Code 拡張機能が Google Cloud に接続するために必要   ║
-# ╚════════════════════════════════════════════════════════════════════╝
-info "Step 2/4: 認証状態を確認中..."
+# JA: Step 2: 認証状態の確認（Application Default Credentials が設定されているか）
+info "Step 2/4: Checking authentication..."
 
-# ADC ファイルのパス
-# 環境変数 GOOGLE_APPLICATION_CREDENTIALS が設定されていればそれを使用
-# 未設定ならデフォルトのパスを使用
+# JA: 環境変数 GOOGLE_APPLICATION_CREDENTIALS が設定されていればそれを使用、未設定ならデフォルトのパスを使用
 ADC_PATH="${GOOGLE_APPLICATION_CREDENTIALS:-$HOME/.config/gcloud/application_default_credentials.json}"
 
-# ADC ファイルが存在するかチェック
+# JA: ADC ファイルが存在するかチェック
 if [ -f "$ADC_PATH" ]; then
-    success "Application Default Credentials が設定されています"
+    success "Application Default Credentials are set"
 else
-    warn "Application Default Credentials が見つかりません"
+    warn "Application Default Credentials not found"
     echo ""
-    echo "💡 ADC とは？"
-    echo "   ローカル環境から Google Cloud に接続するための認証情報です。"
-    echo "   VS Code 拡張機能が BigQuery からデータを取得するために必要です。"
+    # JA: ADC とは？ ローカル環境から Google Cloud に接続するための認証情報。VS Code 拡張機能が BigQuery からデータを取得するために必要。
+    echo "💡 What is ADC?"
+    echo "   Credentials for connecting to Google Cloud from your machine."
+    echo "   Required for the VS Code extension to read data from BigQuery."
     echo ""
     
-    # ユーザーに認証を行うか確認
-    read -p "今すぐ認証を行いますか？ (y/n): " -n 1 -r
+    # JA: ユーザーに認証を行うか確認
+    read -p "Authenticate now? (y/n): " -n 1 -r
     echo ""
     
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        info "ブラウザで認証を行います..."
-        echo "   → ブラウザが開いたら Google アカウントでログインしてください"
+        # JA: ブラウザで認証を行います。ブラウザが開いたら Google アカウントでログインしてください
+        info "Opening browser for authentication..."
+        echo "   → Sign in with your Google account when the browser opens"
         echo ""
         
         gcloud auth application-default login
         
         if [ $? -eq 0 ]; then
-            success "認証が完了しました"
+            success "Authentication complete"
         else
-            error "認証に失敗しました"
+            error "Authentication failed"
             exit 1
         fi
     else
-        warn "認証をスキップしました"
+        # JA: 認証をスキップしました。後で gcloud auth application-default login を実行してください
+        warn "Skipped authentication"
         echo ""
-        echo "後で以下のコマンドを実行してください:"
+        echo "Run this later when ready:"
         echo "  gcloud auth application-default login"
         echo ""
     fi
 fi
 
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║  Step 3: BigQuery データセットの作成                               ║
-# ║  → 課金データを保存するためのデータセットを作成                   ║
-# ╚════════════════════════════════════════════════════════════════════╝
-info "Step 3/4: BigQuery データセットを作成中..."
+# JA: Step 3: BigQuery データセットの作成（課金データを保存するためのデータセットを作成）
+info "Step 3/4: Creating BigQuery dataset..."
 
-# bq コマンド（BigQuery CLI）が存在するかチェック
-# bq は gcloud CLI に含まれているため、通常は存在するはず
+# JA: bq コマンド（BigQuery CLI）が存在するかチェック。bq は gcloud CLI に含まれている
 if ! command -v bq &> /dev/null; then
-    error "bq コマンドが見つかりません"
+    error "bq command not found"
     echo ""
-    echo "bq は Google Cloud SDK に含まれています。"
-    echo "gcloud CLI を再インストールしてください。"
+    echo "bq is included in the Google Cloud SDK."
+    echo "Please reinstall the gcloud CLI."
     exit 1
 fi
 
-# データセットが既に存在するか確認
-# 存在する場合は作成をスキップ
+# JA: データセットが既に存在するか確認。存在する場合は作成をスキップ
 if bq --project_id="$PROJECT_ID" show "$DATASET_NAME" &> /dev/null; then
-    success "データセット '$DATASET_NAME' は既に存在します"
+    success "Dataset '$DATASET_NAME' already exists"
 else
-    # データセットを新規作成
-    # --dataset     : データセットを作成することを指定
-    # --location    : データの保存場所（リージョン）
-    # --description : データセットの説明
+    # JA: データセットを新規作成（--dataset, --location, --description）
     bq --project_id="$PROJECT_ID" mk \
         --dataset \
         --location="$LOCATION" \
-        --description="Google Cloud Billing Export - 課金データエクスポート用" \
+        --description="Google Cloud Billing Export - billing data export" \
         "$DATASET_NAME"
     
     if [ $? -eq 0 ]; then
-        success "データセット '$DATASET_NAME' を作成しました"
+        success "Created dataset '$DATASET_NAME'"
     else
-        error "データセットの作成に失敗しました"
+        error "Failed to create dataset"
         echo ""
-        echo "考えられる原因:"
-        echo "  - プロジェクト ID が間違っている"
-        echo "  - BigQuery API が有効化されていない"
-        echo "  - 権限が不足している"
+        # JA: 考えられる原因: プロジェクト ID が間違っている、BigQuery API が有効化されていない、権限が不足している
+        echo "Possible causes:"
+        echo "  - Invalid project ID"
+        echo "  - BigQuery API not enabled"
+        echo "  - Insufficient permissions"
         exit 1
     fi
 fi
 
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║  Step 4: 次のステップの案内                                        ║
-# ║  → Google Cloud コンソールでの手動設定が必要                     ║
-# ╚════════════════════════════════════════════════════════════════════╝
+# JA: Step 4: 次のステップの案内（Google Cloud コンソールでの手動設定が必要）
 echo ""
 echo "========================================"
-info "Step 4/4: 残りの手順（手動）"
+info "Step 4/4: Remaining steps (manual)"
 echo "========================================"
 echo ""
-warn "⚡ 課金エクスポートの有効化は Google Cloud コンソールで行う必要があります"
+# JA: 課金エクスポートの有効化は Google Cloud コンソールで行う必要があります
+warn "⚡ Billing export must be enabled in Google Cloud Console"
 echo ""
+# JA: 1. URL にアクセス 2. 左メニューで「請求先アカウント」を選択 3. 「標準の使用料金」→「設定を編集」 4. プロジェクト・データセットを設定 5. 「保存」
 echo "┌─────────────────────────────────────────────────────────────┐"
-echo "│ 1. 以下の URL にアクセス:                                    │"
+echo "│ 1. Open:                                                     │"
 echo "│    ${BLUE}https://console.cloud.google.com/billing/export${NC}         │"
 echo "│                                                             │"
-echo "│ 2. 左メニューで「請求先アカウント」を選択                    │"
+echo "│ 2. Select \"Billing account\" in the left menu                │"
 echo "│                                                             │"
-echo "│ 3. 「標準の使用料金」→「設定を編集」をクリック              │"
+echo "│ 3. Click \"Standard usage cost\" → \"Edit settings\"            │"
 echo "│                                                             │"
-echo "│ 4. 以下を設定:                                               │"
-echo "│    - プロジェクト: ${GREEN}$PROJECT_ID${NC}"
-echo "│    - データセット: ${GREEN}$DATASET_NAME${NC}"
+echo "│ 4. Set:                                                      │"
+echo "│    - Project: ${GREEN}$PROJECT_ID${NC}"
+echo "│    - Dataset: ${GREEN}$DATASET_NAME${NC}"
 echo "│                                                             │"
-echo "│ 5. 「保存」をクリック                                        │"
+echo "│ 5. Click \"Save\"                                               │"
 echo "└─────────────────────────────────────────────────────────────┘"
 echo ""
 
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║  完了メッセージ                                                    ║
-# ╚════════════════════════════════════════════════════════════════════╝
+# JA: 完了メッセージ
 echo "========================================"
-success "セットアップが完了しました！"
+success "Setup complete!"
 echo "========================================"
 echo ""
-echo "📝 次のステップ:"
+# JA: 次のステップ: 課金エクスポートを有効化、VS Code 拡張機能をインストール、gcpBilling.projectId を設定
+echo "📝 Next steps:"
 echo ""
-echo "   1. 上記の Google Cloud コンソールで課金エクスポートを有効化"
-echo "      （データが蓄積されるまで 24〜48 時間かかります）"
+echo "   1. Enable billing export in Google Cloud Console (above)"
+echo "      (Data may take 24–48 hours to appear)"
 echo ""
-echo "   2. VS Code 拡張機能をインストール:"
+echo "   2. Install the VS Code extension:"
 echo "      Cmd + Shift + P → 'Extensions: Install from VSIX...'"
 echo ""
-echo "   3. VS Code 設定でプロジェクト ID を設定:"
+echo "   3. Set the project ID in VS Code settings:"
 echo "      gcpBilling.projectId = \"$PROJECT_ID\""
 echo ""
