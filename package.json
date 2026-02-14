@@ -1,7 +1,7 @@
 {
   "name": "gcp-billing-watcher",
-  "displayName": "Google Cloud Billing Watcher",
-  "description": "Display Google Cloud billing status (current month, annual total, etc.) in real-time in the status bar.",
+  "displayName": "%displayName%",
+  "description": "%description%",
   "version": "0.3.16",
   "publisher": "kimisan",
   "license": "MIT",
@@ -23,53 +23,53 @@
     "commands": [
       {
         "command": "gcpBilling.refresh",
-        "title": "Google Cloud Billing: Refresh Now"
+        "title": "%command.refresh.title%"
       },
       {
         "command": "gcpBilling.menu",
-        "title": "Google Cloud Billing: Show Menu"
+        "title": "%command.menu.title%"
       },
       {
         "command": "gcpBilling.openConsole",
-        "title": "Google Cloud Billing: Go to Google Cloud Console"
+        "title": "%command.openConsole.title%"
       },
       {
         "command": "gcpBilling.showLogs",
-        "title": "Google Cloud Billing: Show Logs"
+        "title": "%command.showLogs.title%"
       }
     ],
     "configuration": {
-      "title": "Google Cloud Billing Watcher",
+      "title": "%config.title%",
       "properties": {
         "gcpBilling.projectId": {
           "type": "string",
           "default": "",
-          "description": "Project ID",
+          "description": "%config.projectId.description%",
           "order": 1
         },
         "gcpBilling.datasetId": {
           "type": "string",
           "default": "billing_export",
-          "description": "BigQuery dataset name. Default is billing_export.",
+          "description": "%config.datasetId.description%",
           "order": 2
         },
         "gcpBilling.credentialsPath": {
           "type": "string",
           "default": "",
-          "description": "Path to service account JSON key file (uses ADC if omitted).",
+          "description": "%config.credentialsPath.description%",
           "order": 3
         },
         "gcpBilling.refreshIntervalMinutes": {
           "type": "number",
           "default": 30,
           "minimum": 5,
-          "description": "Refresh interval (minutes). Minimum 5 minutes.",
+          "description": "%config.refreshIntervalMinutes.description%",
           "order": 4
         },
         "gcpBilling.monthlyBudget": {
           "type": "number",
           "default": 0,
-          "description": "Monthly budget (Currency unit, e.g. USD/JPY). Set to 0 to disable alerts.",
+          "description": "%config.monthlyBudget.description%",
           "order": 5
         },
         "gcpBilling.language": {
@@ -81,17 +81,17 @@
             "ja"
           ],
           "enumDescriptions": [
-            "Auto (System Language)",
-            "English",
-            "Japanese"
+            "%config.language.auto%",
+            "%config.language.en%",
+            "%config.language.ja%"
           ],
-          "description": "Language to use for the extension UI.",
+          "description": "%config.language.description%",
           "order": 6
         },
         "gcpBilling.skipSslVerification": {
           "type": "boolean",
           "default": false,
-          "description": "Skip SSL certificate verification. Use this if you encounter 'unable to get issuer certificate' errors in corporate proxy environments. USE AT YOUR OWN RISK.",
+          "description": "%config.skipSslVerification.description%",
           "order": 7
         }
       }
