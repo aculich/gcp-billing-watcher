@@ -1,16 +1,16 @@
 {
-  "name": "gcp-billing-watcher",
-  "displayName": "%displayName%",
+  "name": "aculich-gcp-billing-watcher",
+  "displayName": "Google Cloud Billing Watcher (aculich)",
   "description": "%description%",
-  "version": "0.3.16",
-  "publisher": "kimisan",
+  "version": "0.3.17",
+  "publisher": "aculich",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kkitase/gcp-billing-watcher.git"
+    "url": "https://github.com/aculich/gcp-billing-watcher.git"
   },
   "categories": [
     "Other"

@@ -1,0 +1,39 @@
+name: Sync upstream
+
+on:
+  schedule:
+    # Weekly on Monday 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/kkitase/gcp-billing-watcher.git || true
+          git fetch upstream main
+
+      - name: Check for upstream changes
+        id: check
+        run: |
+          if git merge-base --is-ancestor HEAD upstream/main; then
+            echo "has_new_commits=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_new_commits=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create sync PR
+        if: steps.check.outputs.has_new_commits == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: sync-upstream
+          title: 'chore: sync upstream main'
+          body: 'Syncs changes from kkitase/gcp-billing-watcher main.'
+          base: main
+          branch-suffix: timestamp
