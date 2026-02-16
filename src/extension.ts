@@ -180,6 +180,36 @@ function log(message: string): void {
   outputChannel.appendLine(`[${timestamp}] ${message}`);
 }
 
+const GCLOUD_CONTEXT_CANDIDATES = ["GCLOUD_CONTEXT.md", "docs/GCLOUD_CONTEXT.md"];
+const PROJECT_ROW_REGEX = /\|\s*Project\s*\|\s*`([^`]+)`\s*\|/;
+
+/**
+ * Tries to discover GCP project ID from GCLOUD_CONTEXT.md in the workspace.
+ * Looks for "Config (active)" table row: | Project | `project-id` |
+ * Returns the project ID or empty string.
+ */
+async function discoverProjectFromGcloudContext(): Promise<string> {
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders?.length) return "";
+
+  const rootUri = folders[0].uri;
+  for (const rel of GCLOUD_CONTEXT_CANDIDATES) {
+    const uri = vscode.Uri.joinPath(rootUri, rel);
+    try {
+      const bytes = await vscode.workspace.fs.readFile(uri);
+      const content = new TextDecoder("utf-8").decode(bytes);
+      const match = content.match(PROJECT_ROW_REGEX);
+      if (match?.[1]) {
+        const id = match[1].trim();
+        if (/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(id)) return id;
+      }
+    } catch {
+      // file not found or unreadable
+    }
+  }
+  return "";
+}
+
 async function promptForProjectId(): Promise<void> {
   let suggestedId = "";
   try {
@@ -189,6 +219,14 @@ async function promptForProjectId(): Promise<void> {
     }).trim();
   } catch (e) {
     // ignore if gcloud unavailable
+  }
+
+  if (!suggestedId) {
+    const fromContext = await discoverProjectFromGcloudContext();
+    if (fromContext) {
+      suggestedId = fromContext;
+      log(currentMessages().projectIdSuggestedFromContext);
+    }
   }
 
   const msg = currentMessages();
@@ -216,11 +254,11 @@ async function promptForProjectId(): Promise<void> {
 
     if (projectId) {
       const config = vscode.workspace.getConfiguration("gcpBilling");
-      await config.update(
-        "projectId",
-        projectId,
-        vscode.ConfigurationTarget.Global
-      );
+      const hasWorkspace = (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
+      const target = hasWorkspace
+        ? vscode.ConfigurationTarget.Workspace
+        : vscode.ConfigurationTarget.Global;
+      await config.update("projectId", projectId, target);
       log(msg.projectIdSet + projectId);
     }
   }

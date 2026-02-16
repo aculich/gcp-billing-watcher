@@ -36,6 +36,7 @@ export interface Messages {
   projectIdRequired: string;
   projectIdInvalid: string;
   projectIdSet: string;
+  projectIdSuggestedFromContext: string;
   // Status bar
   tooltipClickMenu: string;
   notConfiguredTooltip: string;
@@ -81,6 +82,8 @@ const en: Messages = {
   projectIdRequired: "Please enter a Project ID",
   projectIdInvalid: "Project ID format is invalid",
   projectIdSet: "Project ID set: ",
+  projectIdSuggestedFromContext:
+    "Using project from GCLOUD_CONTEXT.md as suggestion",
   tooltipClickMenu: "Google Cloud Billing Watcher - Click to show menu",
   notConfiguredTooltip:
     "Click to open settings (set gcpBilling.projectId)",
@@ -126,6 +129,8 @@ const ja: Messages = {
   projectIdRequired: "プロジェクト ID を入力してください",
   projectIdInvalid: "プロジェクト ID の形式が正しくありません",
   projectIdSet: "プロジェクト ID を設定しました: ",
+  projectIdSuggestedFromContext:
+    "GCLOUD_CONTEXT.md からプロジェクトを候補として使用しています",
   tooltipClickMenu: "Google Cloud Billing Watcher - クリックしてメニューを表示",
   notConfiguredTooltip:
     "クリックして設定を開く（gcpBilling.projectId を設定してください）",
