@@ -262,6 +262,8 @@ if [ $BQ_SHOW_EXIT -eq 124 ] || [ $BQ_SHOW_EXIT -eq 143 ]; then
     echo "   BigQuery API. If those hang, the API may be slow, blocked (firewall/proxy), or affected"
     echo "   by an incident. Check https://status.cloud.google.com and try again later or from another network."
     echo ""
+    echo "   To see where bq hangs, run with debug: CLOUDSDK_CORE_LOG_LEVEL=debug bq --project_id=$PROJECT_ID show $DATASET_NAME"
+    echo ""
     echo "========================================"
     echo "  Next steps (run these yourself)"
     echo "========================================"
