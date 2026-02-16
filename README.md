@@ -6,9 +6,20 @@ A VS Code extension that displays your Google Cloud billing status (current mont
 
 ![Screenshot](assets/screenshot.png)
 
+## Install (this fork)
+
+Install the extension from a VSIX file:
+
+1. Open [Releases](https://github.com/aculich/gcp-billing-watcher/releases) and download the latest `.vsix` from the release assets.
+2. In VS Code: **Cmd + Shift + P** → **Extensions: Install from VSIX...** → select the downloaded file.
+
+There is no separate marketplace listing for this fork; use the VSIX from GitHub Releases.
+
+---
+
 ## Quick Start
 
-If you installed this from the Marketplace, follow these 3 simple steps to get started:
+After installing (see above), follow these 3 steps to get started:
 
 ### Step 1: Enable Billing Export in Google Cloud Console
 
@@ -69,6 +80,24 @@ gcloud config set project <your-project-id>
 - **Activation Date**: Data only exists in BigQuery **from the date you enabled the export**. Total costs for the current month will be lower if the export was enabled mid-month.
 - **Aggregated Cost**: The extension displays the **sum of all projects** found in the specified BigQuery table. If some projects are missing, verify that they are linked to the same billing account and that data has been exported.
 
+### BigQuery CLI (bq) reference
+Useful `bq` commands when creating or checking the billing dataset manually:
+
+| Command | Purpose |
+|--------|--------|
+| `bq help` | List all commands |
+| `bq --project_id=PROJECT_ID ls` | List datasets in the project |
+| `bq --project_id=PROJECT_ID show` | Show project info (no dataset name) |
+| `bq --project_id=PROJECT_ID show DATASET_NAME` | Show a dataset (errors if not found) |
+| `bq --project_id=PROJECT_ID mk --dataset --location=LOCATION DATASET_NAME` | Create a dataset |
+
+Example: list datasets, then create `billing_export` if missing:
+```bash
+bq --project_id=noopbot-1234 ls
+bq --project_id=noopbot-1234 show billing_export   # errors with "Not found" if it doesn't exist
+bq --project_id=noopbot-1234 mk --dataset --location=US billing_export
+```
+
 ---
 
 ## For Developers
@@ -79,12 +108,13 @@ If you've cloned the repository, you can use `setup.sh` to automate dataset crea
 ./setup.sh <project-id>
 ```
 
-### Manual Installation
-Download the `.vsix` file from [GitHub Releases](https://github.com/kkitase/gcp-billing-watcher/releases) and use "Extensions: Install from VSIX...".
+### Manual Installation (this fork)
+Download the `.vsix` file from [GitHub Releases](https://github.com/aculich/gcp-billing-watcher/releases) and use **Extensions: Install from VSIX...** in VS Code.
 
 ### Building from Source
 ```bash
-git clone https://github.com/kkitase/gcp-billing-watcher.git
+git clone https://github.com/aculich/gcp-billing-watcher.git
+cd gcp-billing-watcher
 npm install
 npm run compile
 ```

@@ -40,12 +40,13 @@ warn()    { echo -e "${YELLOW}⚠️  $1${NC}"; }
 error()   { echo -e "${RED}❌ $1${NC}"; }
 
 # JA: タイムアウト付きでコマンドを実行（bq がハングするのを防ぐ）
-# EN: Run a command with a timeout to avoid hanging (e.g. bq can hang on slow/first connection)
+# EN: Run a command with a timeout to avoid hanging (e.g. bq can hang on slow/first connection).
+# Always redirect stdin from /dev/null so bq (or any command) never blocks on input when run from a script.
 # Returns 124 if the command was killed after timeout_sec (SIGTERM -> wait returns 143).
 run_with_timeout() {
     local timeout_sec="$1"
     shift
-    "$@" &
+    "$@" < /dev/null &
     local pid=$!
     ( sleep "$timeout_sec"; kill $pid 2>/dev/null ) &
     local killer=$!
@@ -95,8 +96,9 @@ PROJECT_ID="$1"
 DATASET_NAME="${2:-billing_export}"
 LOCATION="${3:-US}"
 
-# JA: bq コマンドのタイムアウト（秒）。ハング防止。
-BQ_TIMEOUT=60
+# JA: bq コマンドのタイムアウト（秒）。ハング防止。環境で遅い場合は BQ_TIMEOUT=120 などで上書き可能。
+# EN: Timeout for bq commands (seconds). Override for slow environments: BQ_TIMEOUT=120 ./setup.sh ...
+BQ_TIMEOUT="${BQ_TIMEOUT:-60}"
 
 # JA: 設定内容を表示
 echo "📋 Settings:"
@@ -246,11 +248,20 @@ if ! command -v bq &> /dev/null; then
 fi
 
 # JA: データセットが既に存在するか確認。存在する場合は作成をスキップ（タイムアウト付き）
-info "   Checking if dataset '$DATASET_NAME' already exists in project $PROJECT_ID..."
+# EN: bq reference: "bq ls" = list datasets in project; "bq show <id>" = show project (no arg) or dataset (name); "bq mk --dataset ..." = create dataset
+info "   Listing existing datasets in project $PROJECT_ID (bq ls)..."
+BQ_LS_OUTPUT=$(run_with_timeout "$BQ_TIMEOUT" bq --project_id="$PROJECT_ID" ls --format=pretty 2>&1)
+BQ_LS_EXIT=$?
+if [ $BQ_LS_EXIT -eq 0 ] && [ -n "$BQ_LS_OUTPUT" ]; then
+    echo "$BQ_LS_OUTPUT" | sed 's/^/   /'
+else
+    echo "   (none or list timed out)"
+fi
+echo ""
+info "   Checking if dataset '$DATASET_NAME' already exists (bq show $DATASET_NAME)..."
 info "   (Timeout: ${BQ_TIMEOUT}s — if this hangs, the script will stop and show next steps)"
 echo ""
-echo "   Command we're running (you can run this yourself to test or see errors):"
-echo "   bq --project_id=$PROJECT_ID show $DATASET_NAME"
+echo "   Command: bq --project_id=$PROJECT_ID show $DATASET_NAME"
 echo ""
 BQ_SHOW_OUTPUT=$(run_with_timeout "$BQ_TIMEOUT" bq --project_id="$PROJECT_ID" show "$DATASET_NAME" 2>&1)
 BQ_SHOW_EXIT=$?
@@ -289,11 +300,7 @@ else
     echo "   bq --project_id=$PROJECT_ID mk --dataset --location=$LOCATION --description=\"...\" $DATASET_NAME"
     echo "   (Full: bq --project_id=$PROJECT_ID mk --dataset --location=$LOCATION --description=\"Google Cloud Billing Export - billing data export\" $DATASET_NAME)"
     echo ""
-    if run_with_timeout "$BQ_TIMEOUT" bq --project_id="$PROJECT_ID" mk \
-        --dataset \
-        --location="$LOCATION" \
-        --description="Google Cloud Billing Export - billing data export" \
-        "$DATASET_NAME"; then
+    if run_with_timeout "$BQ_TIMEOUT" sh -c "bq --project_id=$PROJECT_ID mk --dataset --location=$LOCATION --description='Google Cloud Billing Export - billing data export' $DATASET_NAME"; then
         success "Created dataset '$DATASET_NAME'"
     else
         BQ_MK_EXIT=$?
